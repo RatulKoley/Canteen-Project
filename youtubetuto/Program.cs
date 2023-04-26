@@ -58,40 +58,87 @@ app.MapGet("/Sales", async (DataContext con) =>
 await con.Sales.Include(test => test.KitchenFood).ToListAsync());
 
 
-app.MapGet("/Item/{id}", async (DataContext con, int id) =>
+app.MapGet("/Item/{id:int}", async (DataContext con, int id) =>
 await con.Item.Include(test => test.Stock).Include(test => test.Purchase).Include(test => test.FoodMapping)
-.Where(test => test.ItemCode == id).FirstOrDefaultAsync());
+.Where(test => test.ItemCode == id).ToListAsync());
+
+app.MapGet("/Item/{name}", async (DataContext con, string name) =>
+await con.Item.Include(test => test.Stock).Include(test => test.Purchase).Include(test => test.FoodMapping)
+.Where(test => test.ItemName == name).ToListAsync());
 
 app.MapGet("/Stock/{id}", async (DataContext con, int id) =>
-await con.Stock.Include(test => test.Item).Where(test => test.StockID == id).FirstOrDefaultAsync());
+await con.Stock.Include(test => test.Item).Where(test => test.StockID == id).ToListAsync());
 
-app.MapGet("/Unit/{id}", async (DataContext con, int id) =>
+app.MapGet("/Stock/Item/{id}", async (DataContext con, int id) =>
+await con.Stock.Include(test => test.Item).Where(test => test.ItemId == id).ToListAsync());
+
+app.MapGet("/Unit/{id:int}", async (DataContext con, int id) =>
 await con.Unit.Include(test => test.Item)
-.Where(test => test.ID == id).FirstOrDefaultAsync());
+.Where(test => test.ID == id).ToListAsync());
+
+app.MapGet("/Unit/{name}", async (DataContext con, string name) =>
+await con.Unit.Include(test => test.Item)
+.Where(test => test.UnitName == name).ToListAsync());
 
 app.MapGet("/Purchase/{id}", async (DataContext con, int id) =>
 await con.Purchase.Include(test => test.Item).Include(test => test.Supply)
-.Where(test => test.PurchaseNo == id).FirstOrDefaultAsync());
+.Where(test => test.PurchaseNo == id).ToListAsync());
 
-app.MapGet("/Supply/{id}", async (DataContext con, int id) =>
+app.MapGet("/Purchase/Item/{id}", async (DataContext con, int id) =>
+await con.Purchase.Include(test => test.Item).Include(test => test.Supply)
+.Where(test => test.ItemId == id).ToListAsync());
+
+app.MapGet("/Purchase/Supplier/{id}", async (DataContext con, int id) =>
+await con.Purchase.Include(test => test.Item).Include(test => test.Supply)
+.Where(test => test.SupplyId == id).ToListAsync());
+
+app.MapGet("/Supply/{id:int}", async (DataContext con, int id) =>
 await con.Supply.Include(test => test.Purchase)
-.Where(test => test.SupplyID == id).FirstOrDefaultAsync());
+.Where(test => test.SupplyID == id).ToListAsync());
 
-app.MapGet("/FoodMenu/{id}", async (DataContext con, int id) =>
+app.MapGet("/Supply/{name}", async (DataContext con, string name) =>
+await con.Supply.Include(test => test.Purchase)
+.Where(test => test.SupplierName == name).ToListAsync());
+
+app.MapGet("/FoodMenu/{id:int}", async (DataContext con, int id) =>
 await con.FoodMenu.Include(test => test.FoodMapping).Include(test => test.KitchenFood)
-.Where(test => test.FoodID == id).FirstOrDefaultAsync());
+.Where(test => test.FoodID == id).ToListAsync());
 
-app.MapGet("/FoodMapping/{id}", async (DataContext con, int id) =>
+app.MapGet("/FoodMenu/{name}", async (DataContext con, string name) =>
+await con.FoodMenu.Include(test => test.FoodMapping).Include(test => test.KitchenFood)
+.Where(test => test.FoodName == name).ToListAsync());
+
+app.MapGet("/FoodMapping/Food/{id}", async (DataContext con, int id) =>
 await con.FoodMapping.Include(test => test.FoodMenu)
 .Where(test => test.FoodID == id).Where(test => test.Active == true).ToListAsync());
+
+app.MapGet("/FoodMapping/Item/{id}", async (DataContext con, int id) =>
+await con.FoodMapping.Include(test => test.FoodMenu)
+.Where(test => test.ItemId == id).Where(test => test.Active == true).ToListAsync());
 
 app.MapGet("/KitchenFood/{id}", async (DataContext con, int id) =>
 await con.KitchenFood.Include(test => test.Sales)
 .Where(test => test.KitchenFoodID == id).ToListAsync());
 
+app.MapGet("/KitchenFood/Food/{id}", async (DataContext con, int id) =>
+await con.KitchenFood.Include(test => test.Sales)
+.Where(test => test.FoodID == id).ToListAsync());
+
 app.MapGet("/Sales/{id}", async (DataContext con, int id) =>
 await con.Sales.Include(test => test.KitchenFood)
 .Where(test => test.SalesID == id).ToListAsync());
+
+app.MapGet("/Sales/CustomerName/{name}", async (DataContext con, string name) =>
+await con.Sales.Include(test => test.KitchenFood)
+.Where(test => test.CustomerName == name).ToListAsync());
+
+app.MapGet("/Sales/CustomerType/{id}", async (DataContext con, string name) =>
+await con.Sales.Include(test => test.KitchenFood)
+.Where(test => test.CustomerType == name).ToListAsync());
+
+app.MapGet("/Sales/Food/{id}", async (DataContext con, int id) =>
+await con.Sales.Include(test => test.KitchenFood)
+.Where(test => test.KitchenFoodID == id).ToListAsync());
 
 
 app.MapPost("/Item", async (DataContext con, ItemDTO i1, IMapper imap) =>
