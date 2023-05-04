@@ -11,7 +11,17 @@ builder.Services.AddDbContext<DataContext>(test =>
 	test.UseSqlServer(builder.Configuration.GetConnectionString("dbcon"));
 	test.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
-
+builder.Services.AddCors(_ =>
+{
+	_.AddPolicy("AllowOrigin", builder =>
+	{
+		builder.AllowAnyHeader()
+			.AllowAnyMethod()
+			.SetIsOriginAllowedToAllowWildcardSubdomains()
+			.SetIsOriginAllowed(origin => true)
+			.AllowCredentials();
+	});
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
