@@ -2,19 +2,19 @@
 
 namespace youtubetuto
 {
-    public class Mapper : Profile
-    {
-        public Mapper()
-        {
-            CreateMap<ItemDTO, Item>();
-            CreateMap<StockDTO, Stock>();
-            CreateMap<UnitDTO, Unit>();
-            CreateMap<PurchaseDTO, Purchase>();
-            CreateMap<SupplyDTO, Supply>();
-            CreateMap<FoodMenuDTO, FoodMenu>();
-            CreateMap<FoodMapppingDTO, FoodMapping>();
-            CreateMap<KitchenFoodDTO, KitchenFood>();
-            CreateMap<SalesDTO, Sales>();
-        }
-    }
+	public class Mapper : Profile
+	{
+		public Mapper()
+		{
+			CreateMap<ItemDTO, Item>().ReverseMap();
+			CreateMap<StockDTO, Stock>().ReverseMap();
+			CreateMap<UnitDTO, Unit>().ReverseMap();
+			CreateMap<PurchaseDTO, Purchase>().ReverseMap();
+			CreateMap<SupplyDTO, Supply>().ReverseMap();
+			CreateMap<FoodMenuDTO, FoodMenu>().ReverseMap();
+			CreateMap<FoodMapppingDTO, FoodMapping>().ReverseMap();
+			CreateMap<KitchenFoodDTO, KitchenFood>().ReverseMap();
+			CreateMap<SalesDTO, Sales>().ReverseMap();
+		}
+	}
 }
