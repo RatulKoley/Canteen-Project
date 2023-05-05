@@ -17,9 +17,7 @@ builder.Services.AddCors(_ =>
 	{
 		builder.AllowAnyHeader()
 			.AllowAnyMethod()
-			.SetIsOriginAllowedToAllowWildcardSubdomains()
-			.SetIsOriginAllowed(origin => true)
-			.AllowCredentials();
+			.SetIsOriginAllowedToAllowWildcardSubdomains();
 	});
 });
 builder.Services.AddEndpointsApiExplorer();
@@ -29,6 +27,9 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
+	app.UseHttpsRedirection();
+    	app.UseCors("AllowOrigin");
+    	app.UseRouting();
 	app.UseSwagger();
 	app.UseSwaggerUI();
 }
