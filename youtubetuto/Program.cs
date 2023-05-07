@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 using youtubetuto;
+using youtubetuto.ViewModel;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAutoMapper(typeof(Program));
@@ -11,15 +12,15 @@ builder.Services.AddDbContext<DataContext>(test =>
 	test.UseSqlServer(builder.Configuration.GetConnectionString("dbcon"));
 	test.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
 });
-builder.Services.AddCors(_ =>
+
+builder.Services.AddCors(c =>
 {
-	_.AddPolicy("AllowOrigin", builder =>
+	c.AddPolicy("AllowOrigin", builder =>
 	{
-		builder.AllowAnyHeader()
+		builder.WithOrigins("*")
+			 .AllowAnyHeader()
 			.AllowAnyMethod()
-			.SetIsOriginAllowedToAllowWildcardSubdomains()
-			.SetIsOriginAllowed(origin => true)
-			.AllowCredentials();
+			.SetIsOriginAllowedToAllowWildcardSubdomains();
 	});
 });
 builder.Services.AddEndpointsApiExplorer();
@@ -38,61 +39,129 @@ app.UseCors("AllowOrigin");
 app.UseRouting();
 
 
-app.MapGet("/Unit", async (DataContext con, IMapper imap) =>
+app.MapGet("/Unit", async (DataContext con) =>
 {
 	var UnitData = await con.Unit.Include(test => test.Item).ToListAsync();
-	return Results.Ok(imap.Map<List<UnitDTO>>(UnitData));
+	UnitListViewModel unit = new UnitListViewModel();
+	unit.Unit = UnitData;
+	return unit;
 });
 
-app.MapGet("/Item", async (DataContext con, IMapper imap) =>
+app.MapGet("/Item", async (DataContext con) =>
 {
 	var ItemData = await con.Item.Include(test => test.Stock).Include(test => test.Purchase)
 .Include(test => test.FoodMapping).ToListAsync();
-	return Results.Ok(imap.Map<List<ItemDTO>>(ItemData));
+	ItemViewModel item = new ItemViewModel();
+	item.Item = ItemData;
+	return item;
 });
 
-app.MapGet("/Stock", async (DataContext con, IMapper imap) =>
+app.MapGet("/Stock", async (DataContext con) =>
 {
 	var StockData = await con.Stock.Include(test => test.Item).ToListAsync();
-	return Results.Ok(imap.Map<List<StockDTO>>(StockData));
+	StockViewModel stock = new StockViewModel();
+	stock.Stock = StockData;
+	return stock;
 });
 
-app.MapGet("/Purchase", async (DataContext con, IMapper imap) =>
+app.MapGet("/Purchase", async (DataContext con) =>
 {
 	var PurchaseData = await con.Purchase.Include(test => test.Item)
 .Include(test => test.Supply).ToListAsync();
-	return Results.Ok(imap.Map<List<PurchaseDTO>>(PurchaseData));
+	PurchaseViewModel purcahse = new PurchaseViewModel();
+	purcahse.Purchase = PurchaseData;
+	return purcahse;
 });
 
-app.MapGet("/Supply", async (DataContext con, IMapper imap) =>
+app.MapGet("/Supply", async (DataContext con) =>
 {
 	var SupplyData = await con.Supply.Include(test => test.Purchase).ToListAsync();
-	return Results.Ok(imap.Map<List<SupplyDTO>>(SupplyData));
+	SupplyViewModel supply = new SupplyViewModel();
+	supply.Supply = SupplyData;
+	return supply;
 });
 
-app.MapGet("/FoodMenu", async (DataContext con, IMapper imap) =>
+app.MapGet("/FoodMenu", async (DataContext con) =>
 {
 	var FoodMenuData = await con.FoodMenu.Include(test => test.FoodMapping).Include(test => test.KitchenFood).ToListAsync();
-	return Results.Ok(imap.Map<List<FoodMenuDTO>>(FoodMenuData));
+	FoodMenuViewModel fd = new FoodMenuViewModel();
+	fd.FoodMenu = FoodMenuData;
+	return fd;
 });
 
-app.MapGet("/FoodMapping", async (DataContext con, IMapper imap) =>
+app.MapGet("/FoodMapping", async (DataContext con) =>
 {
 	var FoodMappingData = await con.FoodMapping.Include(test => test.FoodMenu).ToListAsync();
-	return Results.Ok(imap.Map<List<FoodMapppingDTO>>(FoodMappingData));
+	FoodMappingViewModel fm = new FoodMappingViewModel();
+	fm.FoodMapping = FoodMappingData;
+	return fm;
 });
 
-app.MapGet("/KitchenFood", async (DataContext con, IMapper imap) =>
+app.MapGet("/KitchenFood", async (DataContext con) =>
 {
 	var KitchenFoodData = await con.KitchenFood.Include(test => test.Sales).ToListAsync();
-	return Results.Ok(imap.Map<List<KitchenFoodDTO>>(KitchenFoodData));
+	KitchenFoodViewModel kt = new KitchenFoodViewModel();
+	kt.KitchenFood = KitchenFoodData;
+	return kt;
 });
 
-app.MapGet("/Sales", async (DataContext con, IMapper imap) =>
+app.MapGet("/Sales", async (DataContext con) =>
 {
 	var SalesData = await con.Sales.Include(test => test.KitchenFood).ToListAsync();
-	return Results.Ok(imap.Map<List<SalesDTO>>(SalesData));
+	SalesViewModel sl = new SalesViewModel();
+	sl.Sales = SalesData;
+	return sl;
 });
+
+//app.MapGet("/Item", async (DataContext con, IMapper imap) =>
+//{
+//	var ItemData = await con.Item.Include(test => test.Stock).Include(test => test.Purchase)
+//.Include(test => test.FoodMapping).ToListAsync();
+//	return Results.Ok(imap.Map<List<ItemDTO>>(ItemData));
+//});
+
+//app.MapGet("/Stock", async (DataContext con, IMapper imap) =>
+//{
+//	var StockData = await con.Stock.Include(test => test.Item).ToListAsync();
+//	return Results.Ok(imap.Map<List<StockDTO>>(StockData));
+//});
+
+//app.MapGet("/Purchase", async (DataContext con, IMapper imap) =>
+//{
+//	var PurchaseData = await con.Purchase.Include(test => test.Item)
+//.Include(test => test.Supply).ToListAsync();
+//	return Results.Ok(imap.Map<List<PurchaseDTO>>(PurchaseData));
+//});
+
+//app.MapGet("/Supply", async (DataContext con, IMapper imap) =>
+//{
+//	var SupplyData = await con.Supply.Include(test => test.Purchase).ToListAsync();
+//	return Results.Ok(imap.Map<List<SupplyDTO>>(SupplyData));
+//});
+
+//app.MapGet("/FoodMenu", async (DataContext con, IMapper imap) =>
+//{
+//	var FoodMenuData = await con.FoodMenu.Include(test => test.FoodMapping).Include(test => test.KitchenFood).ToListAsync();
+//	return Results.Ok(imap.Map<List<FoodMenuDTO>>(FoodMenuData));
+//});
+
+//app.MapGet("/FoodMapping", async (DataContext con, IMapper imap) =>
+//{
+//	var FoodMappingData = await con.FoodMapping.Include(test => test.FoodMenu).ToListAsync();
+//	return Results.Ok(imap.Map<List<FoodMapppingDTO>>(FoodMappingData));
+//});
+
+//app.MapGet("/KitchenFood", async (DataContext con, IMapper imap) =>
+//{
+//	var KitchenFoodData = await con.KitchenFood.Include(test => test.Sales).ToListAsync();
+//	return Results.Ok(imap.Map<List<KitchenFoodDTO>>(KitchenFoodData));
+//});
+
+//app.MapGet("/Sales", async (DataContext con, IMapper imap) =>
+//{
+//	var SalesData = await con.Sales.Include(test => test.KitchenFood).ToListAsync();
+//	return Results.Ok(imap.Map<List<SalesDTO>>(SalesData));
+//});
 
 //app.MapGet("/Unit", async (DataContext con) =>
 //await con.Unit.Include(test => test.Item).ToListAsync());
@@ -125,191 +194,265 @@ app.MapGet("/Sales", async (DataContext con, IMapper imap) =>
 //await con.Sales.Include(test => test.KitchenFood).ToListAsync());
 
 
-app.MapGet("/Unit/{id:int}", async (DataContext con, IMapper imap, int id) =>
+app.MapGet("/Unit/{id:int}", async (DataContext con, int id) =>
 {
+	UnitListViewModel unione = new UnitListViewModel();
+	//var UnitData = await con.Unit.Include(test => test.Item).FirstOrDefaultAsync(test => test.ID == id);
 	var UnitData = await con.Unit.Include(test => test.Item).Where(test => test.ID == id).ToListAsync();
-	return Results.Ok(imap.Map<List<UnitDTO>>(UnitData));
+	unione.Unit = UnitData;
+	return unione;
 });
 
-app.MapGet("/Unit/{name}", async (DataContext con, IMapper imap, string name) =>
+app.MapGet("/Item/{id:int}", async (DataContext con, int id) =>
 {
-	var UnitData = await con.Unit.Include(test => test.Item).Where(test => test.UnitName == name).ToListAsync();
-	return Results.Ok(imap.Map<List<UnitDTO>>(UnitData));
-});
-
-app.MapGet("/Item/{id:int}", async (DataContext con, IMapper imap, int id) =>
-{
+	ItemViewModel itemone = new ItemViewModel();
 	var ItemData = await con.Item.Include(test => test.Stock).Include(test => test.Purchase).Include(test => test.FoodMapping)
 .Where(test => test.ItemCode == id).ToListAsync();
-	return Results.Ok(imap.Map<List<ItemDTO>>(ItemData));
+	itemone.Item = ItemData;
+	return itemone;
 });
 
-app.MapGet("/Item/{name}", async (DataContext con, IMapper imap, string name) =>
+app.MapGet("/Stock/{id:int}", async (DataContext con, int id) =>
 {
-	var ItemData = await con.Item.Include(test => test.Stock).Include(test => test.Purchase).Include(test => test.FoodMapping)
-.Where(test => test.ItemName == name).ToListAsync();
-	return Results.Ok(imap.Map<List<ItemDTO>>(ItemData));
-});
-
-
-app.MapGet("/Stock/{id:int}", async (DataContext con, IMapper imap, int id) =>
-{
+	StockViewModel stockone = new StockViewModel();
 	var StockData = await con.Stock.Include(test => test.Item).Where(test => test.StockID == id).ToListAsync();
-	return Results.Ok(imap.Map<List<StockDTO>>(StockData));
+	stockone.Stock = StockData;
+	return stockone;
 });
+
+app.MapGet("/Purchase/{id:int}", async (DataContext con, int id) =>
+{
+	PurchaseViewModel purone = new PurchaseViewModel();
+	var PurchaseData = await con.Purchase.Include(test => test.Item).Include(test => test.Supply)
+.Where(test => test.PurchaseNo == id).ToListAsync();
+	purone.Purchase = PurchaseData;
+	return purone;
+});
+
+app.MapGet("/Supply/{id:int}", async (DataContext con, int id) =>
+{
+	SupplyViewModel supone = new SupplyViewModel();
+	var SupplyData = await con.Supply.Include(test => test.Purchase)
+.Where(test => test.SupplyID == id).ToListAsync();
+	supone.Supply = SupplyData;
+	return supone;
+});
+
+app.MapGet("/FoodMenu/{id:int}", async (DataContext con, int id) =>
+{
+	FoodMenuViewModel foodone = new FoodMenuViewModel();
+	var FoodData = await con.FoodMenu.Include(test => test.FoodMapping).Include(test => test.KitchenFood)
+	.Where(test => test.FoodID == id).ToListAsync();
+	foodone.FoodMenu = FoodData;
+	return foodone;
+});
+
+app.MapGet("/FoodMapping/{id:int}", async (DataContext con, int id) =>
+{
+	FoodMappingViewModel fmone = new FoodMappingViewModel();
+	var MapData = await con.FoodMapping.Include(test => test.FoodMenu)
+.Where(test => test.Active == true).ToListAsync();
+	fmone.FoodMapping = MapData;
+	return fmone;
+});
+
+app.MapGet("/KitchenFood/{id:int}", async (DataContext con, int id) =>
+{
+	KitchenFoodViewModel kitone = new KitchenFoodViewModel();
+	var KitData = await con.KitchenFood.Include(test => test.Sales)
+.Where(test => test.KitchenFoodID == id).ToListAsync();
+	kitone.KitchenFood = KitData;
+	return kitone;
+});
+
+app.MapGet("/Sales/{id:int}", async (DataContext con, int id) =>
+{
+	SalesViewModel saleone = new SalesViewModel();
+	var SalesData = await con.Sales.Include(test => test.KitchenFood)
+.Where(test => test.SalesID == id).ToListAsync();
+	saleone.Sales = SalesData;
+	return saleone;
+});
+
+//app.MapGet("/Unit/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var UnitData = await con.Unit.Include(test => test.Item).Where(test => test.UnitName == name).ToListAsync();
+//	return Results.Ok(imap.Map<List<UnitDTO>>(UnitData));
+//});
+
+//app.MapGet("/Item/{id:int}", async (DataContext con, IMapper imap, int id) =>
+//{
+//	var ItemData = await con.Item.Include(test => test.Stock).Include(test => test.Purchase).Include(test => test.FoodMapping)
+//.Where(test => test.ItemCode == id).ToListAsync();
+//	return Results.Ok(imap.Map<List<ItemDTO>>(ItemData));
+//});
+
+//app.MapGet("/Item/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var ItemData = await con.Item.Include(test => test.Stock).Include(test => test.Purchase).Include(test => test.FoodMapping)
+//.Where(test => test.ItemName == name).ToListAsync();
+//	return Results.Ok(imap.Map<List<ItemDTO>>(ItemData));
+//});
+
+
+//app.MapGet("/Stock/{id:int}", async (DataContext con, IMapper imap, int id) =>
+//{
+//	var StockData = await con.Stock.Include(test => test.Item).Where(test => test.StockID == id).ToListAsync();
+//	return Results.Ok(imap.Map<List<StockDTO>>(StockData));
+//});
 //app.MapGet("/Stock/Item/{id:int}", async (DataContext con, IMapper imap, int id) =>
 //{
 //	var StockData = await con.Stock.Include(test => test.Item).Where(test => test.ItemId == id).ToListAsync();
 //	return Results.Ok(imap.Map<List<StockDTO>>(StockData));
 //});
 
-app.MapGet("/Stock/Item/{name}", async (DataContext con, IMapper imap, string name) =>
-{
-	var itemname = await con.Item.Where(test => test.ItemName == name).FirstOrDefaultAsync();
-	if (itemname != null)
-	{
-		var StockData = await con.Stock.Include(test => test.Item).Where(test => test.ItemId == itemname.ItemCode).ToListAsync();
-		return Results.Ok(imap.Map<List<StockDTO>>(StockData));
-	}
-	else
-		return Results.NotFound("Item Not Found");
-});
+//app.MapGet("/Stock/Item/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var itemname = await con.Item.Where(test => test.ItemName == name).FirstOrDefaultAsync();
+//	if (itemname != null)
+//	{
+//		var StockData = await con.Stock.Include(test => test.Item).Where(test => test.ItemId == itemname.ItemCode).ToListAsync();
+//		return Results.Ok(imap.Map<List<StockDTO>>(StockData));
+//	}
+//	else
+//		return Results.NotFound("Item Not Found");
+//});
 
 
-app.MapGet("/Purchase/{id:int}", async (DataContext con, IMapper imap, int id) =>
-{
-	var PurchaseData = await con.Purchase.Include(test => test.Item).Include(test => test.Supply)
-.Where(test => test.PurchaseNo == id).ToListAsync();
-	return Results.Ok(imap.Map<List<PurchaseDTO>>(PurchaseData));
-});
+//app.MapGet("/Purchase/{id:int}", async (DataContext con, IMapper imap, int id) =>
+//{
+//	var PurchaseData = await con.Purchase.Include(test => test.Item).Include(test => test.Supply)
+//.Where(test => test.PurchaseNo == id).ToListAsync();
+//	return Results.Ok(imap.Map<List<PurchaseDTO>>(PurchaseData));
+//});
 
-app.MapGet("/Purchase/Item/{name}", async (DataContext con, IMapper imap, string name) =>
-{
-	var itemname = await con.Item.Where(test => test.ItemName == name).FirstOrDefaultAsync();
-	if (itemname != null)
-	{
-		var PurchaseData = await con.Purchase.Include(test => test.Item).Include(test => test.Supply)
-	.Where(test => test.ItemId == itemname.ItemCode).ToListAsync();
-		return Results.Ok(imap.Map<List<PurchaseDTO>>(PurchaseData));
-	}
-	else
-		return Results.NotFound("Item Not Found");
-});
+//app.MapGet("/Purchase/Item/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var itemname = await con.Item.Where(test => test.ItemName == name).FirstOrDefaultAsync();
+//	if (itemname != null)
+//	{
+//		var PurchaseData = await con.Purchase.Include(test => test.Item).Include(test => test.Supply)
+//	.Where(test => test.ItemId == itemname.ItemCode).ToListAsync();
+//		return Results.Ok(imap.Map<List<PurchaseDTO>>(PurchaseData));
+//	}
+//	else
+//		return Results.NotFound("Item Not Found");
+//});
 
-app.MapGet("/Purchase/Supplier/{name}", async (DataContext con, IMapper imap, string name) =>
-{
-	var suppliername = await con.Supply.Where(test => test.SupplierName == name).FirstOrDefaultAsync();
-	if (suppliername != null)
-	{
-		var PurchaseData = await con.Purchase.Include(test => test.Item).Include(test => test.Supply)
-	.Where(test => test.SupplyId == suppliername.SupplyID).ToListAsync();
-		return Results.Ok(imap.Map<List<PurchaseDTO>>(PurchaseData));
-	}
-	else
-		return Results.NotFound("Supplier Not Found");
-});
+//app.MapGet("/Purchase/Supplier/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var suppliername = await con.Supply.Where(test => test.SupplierName == name).FirstOrDefaultAsync();
+//	if (suppliername != null)
+//	{
+//		var PurchaseData = await con.Purchase.Include(test => test.Item).Include(test => test.Supply)
+//	.Where(test => test.SupplyId == suppliername.SupplyID).ToListAsync();
+//		return Results.Ok(imap.Map<List<PurchaseDTO>>(PurchaseData));
+//	}
+//	else
+//		return Results.NotFound("Supplier Not Found");
+//});
 
-app.MapGet("/Supply/{id:int}", async (DataContext con, IMapper imap, int id) =>
-{
-	var SupplyData = await con.Supply.Include(test => test.Purchase)
-.Where(test => test.SupplyID == id).ToListAsync();
-	return Results.Ok(imap.Map<List<SupplyDTO>>(SupplyData));
-});
+//app.MapGet("/Supply/{id:int}", async (DataContext con, IMapper imap, int id) =>
+//{
+//	var SupplyData = await con.Supply.Include(test => test.Purchase)
+//.Where(test => test.SupplyID == id).ToListAsync();
+//	return Results.Ok(imap.Map<List<SupplyDTO>>(SupplyData));
+//});
 
-app.MapGet("/Supply/{name}", async (DataContext con, IMapper imap, string name) =>
-{
-	var SupplyData = await con.Supply.Include(test => test.Purchase)
-.Where(test => test.SupplierName == name).ToListAsync();
-	return Results.Ok(imap.Map<List<SupplyDTO>>(SupplyData));
-});
+//app.MapGet("/Supply/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var SupplyData = await con.Supply.Include(test => test.Purchase)
+//.Where(test => test.SupplierName == name).ToListAsync();
+//	return Results.Ok(imap.Map<List<SupplyDTO>>(SupplyData));
+//});
 
-app.MapGet("/FoodMenu/{id:int}", async (DataContext con, IMapper imap, int id) =>
-{
-	var FoodMenuData = await con.FoodMenu.Include(test => test.FoodMapping).Include(test => test.KitchenFood).Where(test => test.FoodID == id).ToListAsync();
-	return Results.Ok(imap.Map<List<FoodMenuDTO>>(FoodMenuData));
-});
+//app.MapGet("/FoodMenu/{id:int}", async (DataContext con, IMapper imap, int id) =>
+//{
+//	var FoodMenuData = await con.FoodMenu.Include(test => test.FoodMapping).Include(test => test.KitchenFood).Where(test => test.FoodID == id).ToListAsync();
+//	return Results.Ok(imap.Map<List<FoodMenuDTO>>(FoodMenuData));
+//});
 
-app.MapGet("/FoodMenu/{name}", async (DataContext con, IMapper imap, string name) =>
-{
-	var FoodMenuData = await con.FoodMenu.Include(test => test.FoodMapping).Include(test => test.KitchenFood)
-.Where(test => test.FoodName == name).ToListAsync();
-	return Results.Ok(imap.Map<List<FoodMenuDTO>>(FoodMenuData));
-});
+//app.MapGet("/FoodMenu/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var FoodMenuData = await con.FoodMenu.Include(test => test.FoodMapping).Include(test => test.KitchenFood)
+//.Where(test => test.FoodName == name).ToListAsync();
+//	return Results.Ok(imap.Map<List<FoodMenuDTO>>(FoodMenuData));
+//});
 
 
-app.MapGet("/FoodMapping/{id:int}", async (DataContext con, IMapper imap, int id) =>
-{
-	var FoodMappingData = await con.FoodMapping.Include(test => test.FoodMenu)
-.Where(test => test.MappingID == id).Where(test => test.Active == true).ToListAsync();
-	return Results.Ok(imap.Map<List<FoodMapppingDTO>>(FoodMappingData));
-});
+//app.MapGet("/FoodMapping/{id:int}", async (DataContext con, IMapper imap, int id) =>
+//{
+//	var FoodMappingData = await con.FoodMapping.Include(test => test.FoodMenu)
+//.Where(test => test.MappingID == id).Where(test => test.Active == true).ToListAsync();
+//	return Results.Ok(imap.Map<List<FoodMapppingDTO>>(FoodMappingData));
+//});
 
-app.MapGet("/FoodMapping/Food/{name}", async (DataContext con, IMapper imap, string name) =>
-{
-	var foodname = await con.FoodMenu.Where(test => test.FoodName == name).FirstOrDefaultAsync();
-	if (foodname != null)
-	{
-		var FoodMappingData = await con.FoodMapping.Include(test => test.FoodMenu)
-	.Where(test => test.FoodID == foodname.FoodID).Where(test => test.Active == true).ToListAsync();
-		return Results.Ok(imap.Map<List<FoodMapppingDTO>>(FoodMappingData));
-	}
-	else
-		return Results.NotFound("Food Item Not Found");
-});
+//app.MapGet("/FoodMapping/Food/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var foodname = await con.FoodMenu.Where(test => test.FoodName == name).FirstOrDefaultAsync();
+//	if (foodname != null)
+//	{
+//		var FoodMappingData = await con.FoodMapping.Include(test => test.FoodMenu)
+//	.Where(test => test.FoodID == foodname.FoodID).Where(test => test.Active == true).ToListAsync();
+//		return Results.Ok(imap.Map<List<FoodMapppingDTO>>(FoodMappingData));
+//	}
+//	else
+//		return Results.NotFound("Food Item Not Found");
+//});
 
-app.MapGet("/FoodMapping/Item/{name}", async (DataContext con, IMapper imap, string name) =>
-{
-	var itemname = await con.Item.Where(test => test.ItemName == name).FirstOrDefaultAsync();
-	if (itemname != null)
-	{
-		var FoodMappingData = await con.FoodMapping.Include(test => test.FoodMenu)
-	.Where(test => test.ItemId == itemname.ItemCode).Where(test => test.Active == true).ToListAsync();
-		return Results.Ok(imap.Map<List<FoodMapppingDTO>>(FoodMappingData));
-	}
-	else
-		return Results.NotFound("Item Not Found");
-});
+//app.MapGet("/FoodMapping/Item/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var itemname = await con.Item.Where(test => test.ItemName == name).FirstOrDefaultAsync();
+//	if (itemname != null)
+//	{
+//		var FoodMappingData = await con.FoodMapping.Include(test => test.FoodMenu)
+//	.Where(test => test.ItemId == itemname.ItemCode).Where(test => test.Active == true).ToListAsync();
+//		return Results.Ok(imap.Map<List<FoodMapppingDTO>>(FoodMappingData));
+//	}
+//	else
+//		return Results.NotFound("Item Not Found");
+//});
 
-app.MapGet("/KitchenFood/{id:int}", async (DataContext con, IMapper imap, int id) =>
-{
-	var KitchenFoodData = await con.KitchenFood.Include(test => test.Sales)
-.Where(test => test.KitchenFoodID == id).ToListAsync();
-	return Results.Ok(imap.Map<List<KitchenFoodDTO>>(KitchenFoodData));
-});
+//app.MapGet("/KitchenFood/{id:int}", async (DataContext con, IMapper imap, int id) =>
+//{
+//	var KitchenFoodData = await con.KitchenFood.Include(test => test.Sales)
+//.Where(test => test.KitchenFoodID == id).ToListAsync();
+//	return Results.Ok(imap.Map<List<KitchenFoodDTO>>(KitchenFoodData));
+//});
 
-app.MapGet("/KitchenFood/Food/{name}", async (DataContext con, IMapper imap, string name) =>
-{
-	var foodname = await con.FoodMenu.Where(test => test.FoodName == name).FirstOrDefaultAsync();
-	if (foodname != null)
-	{
-		var KitchenFoodData = await con.KitchenFood.Include(test => test.Sales)
-	.Where(test => test.FoodID == foodname.FoodID).ToListAsync();
-		return Results.Ok(imap.Map<List<KitchenFoodDTO>>(KitchenFoodData));
-	}
-	else
-		return Results.NotFound("Food Item Not Found");
-});
+//app.MapGet("/KitchenFood/Food/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var foodname = await con.FoodMenu.Where(test => test.FoodName == name).FirstOrDefaultAsync();
+//	if (foodname != null)
+//	{
+//		var KitchenFoodData = await con.KitchenFood.Include(test => test.Sales)
+//	.Where(test => test.FoodID == foodname.FoodID).ToListAsync();
+//		return Results.Ok(imap.Map<List<KitchenFoodDTO>>(KitchenFoodData));
+//	}
+//	else
+//		return Results.NotFound("Food Item Not Found");
+//});
 
-app.MapGet("/Sales/{id:int}", async (DataContext con, IMapper imap, int id) =>
-{
-	var SalesData = await con.Sales.Include(test => test.KitchenFood)
-.Where(test => test.SalesID == id).ToListAsync();
-	return Results.Ok(imap.Map<List<SalesDTO>>(SalesData));
-});
+//app.MapGet("/Sales/{id:int}", async (DataContext con, IMapper imap, int id) =>
+//{
+//	var SalesData = await con.Sales.Include(test => test.KitchenFood)
+//.Where(test => test.SalesID == id).ToListAsync();
+//	return Results.Ok(imap.Map<List<SalesDTO>>(SalesData));
+//});
 
-app.MapGet("/Sales/CustomerName/{name}", async (DataContext con, IMapper imap, string name) =>
-{
-	var SalesData = await con.Sales.Include(test => test.KitchenFood)
-.Where(test => test.CustomerName == name).ToListAsync();
-	return Results.Ok(imap.Map<List<SalesDTO>>(SalesData));
-});
+//app.MapGet("/Sales/CustomerName/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var SalesData = await con.Sales.Include(test => test.KitchenFood)
+//.Where(test => test.CustomerName == name).ToListAsync();
+//	return Results.Ok(imap.Map<List<SalesDTO>>(SalesData));
+//});
 
-app.MapGet("/Sales/CustomerType/{name}", async (DataContext con, IMapper imap, string name) =>
-{
-	var SalesData = await con.Sales.Include(test => test.KitchenFood)
-.Where(test => test.CustomerType == name).ToListAsync();
-	return Results.Ok(imap.Map<List<SalesDTO>>(SalesData));
-});
+//app.MapGet("/Sales/CustomerType/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var SalesData = await con.Sales.Include(test => test.KitchenFood)
+//.Where(test => test.CustomerType == name).ToListAsync();
+//	return Results.Ok(imap.Map<List<SalesDTO>>(SalesData));
+//});
 
 //app.MapGet("/Sales/Food/{id:int}", async (DataContext con, IMapper imap, int id) =>
 //{
@@ -318,25 +461,25 @@ app.MapGet("/Sales/CustomerType/{name}", async (DataContext con, IMapper imap, s
 //	return Results.Ok(imap.Map<List<SalesDTO>>(SalesData));
 //});
 
-app.MapGet("/Sales/Food/{name}", async (DataContext con, IMapper imap, string name) =>
-{
-	var foodname = await con.FoodMenu.Where(test => test.FoodName == name).FirstOrDefaultAsync();
-	if (foodname != null)
-	{
-		var kitchenid = await con.KitchenFood
-	.Where(test => test.FoodID == foodname.FoodID).FirstOrDefaultAsync();
-		if (kitchenid != null)
-		{
-			var SalesData = await con.Sales.Include(test => test.KitchenFood)
-	.Where(test => test.KitchenFoodID == kitchenid.KitchenFoodID).ToListAsync();
-			return Results.Ok(imap.Map<List<SalesDTO>>(SalesData));
-		}
-		else
-			return Results.NotFound("Kitchen Food Not Found");
-	}
-	else
-		return Results.NotFound("Food Item Not Found");
-});
+//app.MapGet("/Sales/Food/{name}", async (DataContext con, IMapper imap, string name) =>
+//{
+//	var foodname = await con.FoodMenu.Where(test => test.FoodName == name).FirstOrDefaultAsync();
+//	if (foodname != null)
+//	{
+//		var kitchenid = await con.KitchenFood
+//	.Where(test => test.FoodID == foodname.FoodID).FirstOrDefaultAsync();
+//		if (kitchenid != null)
+//		{
+//			var SalesData = await con.Sales.Include(test => test.KitchenFood)
+//	.Where(test => test.KitchenFoodID == kitchenid.KitchenFoodID).ToListAsync();
+//			return Results.Ok(imap.Map<List<SalesDTO>>(SalesData));
+//		}
+//		else
+//			return Results.NotFound("Kitchen Food Not Found");
+//	}
+//	else
+//		return Results.NotFound("Food Item Not Found");
+//});
 
 //app.MapGet("/Item/{id:int}", async (DataContext con, int id) =>
 //await con.Item.Include(test => test.Stock).Include(test => test.Purchase).Include(test => test.FoodMapping)
@@ -598,49 +741,68 @@ app.MapPost("/KitchenFood", async (DataContext con, KitchenFoodDTO k1, IMapper i
 
 app.MapPost("/Sales", async (DataContext con, SalesDTO s1, IMapper imap) =>
 {
-	var foodid = await con.FoodMenu.Where(test => test.FoodName == s1.KitchenFoodName).FirstOrDefaultAsync();
-	if (foodid != null)
+	var result = await con.KitchenFood.Where(test => test.KitchenFoodID == s1.KitchenFoodID).FirstOrDefaultAsync();
+	if (result != null)
 	{
-		var kitchenfoodid = await con.KitchenFood.Where(test => test.FoodID == foodid.FoodID).FirstOrDefaultAsync();
-		if (kitchenfoodid != null)
-			s1.KitchenFoodID = kitchenfoodid.KitchenFoodID;
-		else
-			return Results.NotFound("Kitchen Food Is Unavailable");
-	}
-	else
-		return Results.NotFound("Food Is Unavailable");
-
-	var kitchenfoodremove = await con.KitchenFood.Where(test => test.KitchenFoodID == s1.KitchenFoodID).FirstOrDefaultAsync();
-	if (kitchenfoodremove != null)
-	{
-		if (kitchenfoodremove.QuantityPrepared < s1.Quantity)
+		var foodid = await con.FoodMenu.Where(test => test.FoodName == s1.KitchenFoodName).FirstOrDefaultAsync();
+		if (foodid != null)
 		{
-			var foodname = await con.FoodMenu.Where(test => test.FoodID == kitchenfoodremove.FoodID).FirstOrDefaultAsync();
-			if (foodname != null)
-				return Results.NotFound("The Food Item " + foodname.FoodName + "is not available enough");
+			var kitchenfoodid = await con.KitchenFood.Where(test => test.FoodID == foodid.FoodID).FirstOrDefaultAsync();
+			if (kitchenfoodid != null)
+				s1.KitchenFoodID = kitchenfoodid.KitchenFoodID;
+			else
+				return Results.NotFound("Kitchen Food Is Unavailable");
 		}
-		kitchenfoodremove.QuantityPrepared = kitchenfoodremove.QuantityPrepared - s1.Quantity;
-		con.KitchenFood.Update(kitchenfoodremove);
-		var fooditemprice = await con.FoodMenu.Where(test => test.FoodID == kitchenfoodremove.FoodID).FirstOrDefaultAsync();
-		if (fooditemprice != null)
+		else
+			return Results.NotFound("Food Is Unavailable");
+
+		var kitchenfoodremove = await con.KitchenFood.Where(test => test.KitchenFoodID == s1.KitchenFoodID).FirstOrDefaultAsync();
+		if (kitchenfoodremove != null)
 		{
-			if (s1.Price != null && s1.Quantity != null && fooditemprice.Price != null)
+			if (kitchenfoodremove.QuantityPrepared < s1.Quantity)
 			{
-				s1.Price = s1.Quantity * fooditemprice.Price;
+				var foodname = await con.FoodMenu.Where(test => test.FoodID == kitchenfoodremove.FoodID).FirstOrDefaultAsync();
+				if (foodname != null)
+					return Results.NotFound("The Food Item " + foodname.FoodName + "is not available enough");
+			}
+			kitchenfoodremove.QuantityPrepared = kitchenfoodremove.QuantityPrepared - s1.Quantity;
+			con.KitchenFood.Update(kitchenfoodremove);
+			var fooditemprice = await con.FoodMenu.Where(test => test.FoodID == kitchenfoodremove.FoodID).FirstOrDefaultAsync();
+			if (fooditemprice != null)
+			{
+				if (s1.Price != null && s1.Quantity != null && fooditemprice.Price != null)
+				{
+					double totalpaid = 0;
+					s1.Price = s1.Quantity * fooditemprice.Price;
+					if (s1.Cash != null && s1.UPI != null && s1.Credit != null)
+					{
+						totalpaid = (double)(s1.Cash + s1.Credit + s1.UPI);
+						if (s1.Price < totalpaid)
+						{
+							return Results.NotFound("Over Paid");
+						}
+						else if (s1.Price > totalpaid)
+						{
+							return Results.NotFound("Under Paid");
+						}
+					}
+				}
 			}
 		}
+		var newsale = imap.Map<Sales>(s1);
+		con.Sales.Add(newsale);
+		await con.SaveChangesAsync();
+		return Results.Created($"/Item/{newsale.SalesID}", newsale);
 	}
-	var newsale = imap.Map<Sales>(s1);
-	con.Sales.Add(newsale);
-	await con.SaveChangesAsync();
-	return Results.Created($"/Item/{newsale.SalesID}", newsale);
+	else
+		return Results.NotFound("Kitchen Food Not Found");
 });
 
 
 
 
 
-app.MapPut("/Item", async (DataContext con, ItemDTO i1, IMapper imap) =>
+app.MapPut("/Item/{id:int}", async (DataContext con, ItemDTO i1, IMapper imap, int id) =>
 {
 	var unitid = await con.Unit.Where(test => test.UnitName == i1.UnitName).FirstOrDefaultAsync();
 	if (unitid != null)
@@ -648,12 +810,15 @@ app.MapPut("/Item", async (DataContext con, ItemDTO i1, IMapper imap) =>
 	else
 		return Results.NotFound("Unit Is Unavailable");
 
-	var updateitem = imap.Map<Item>(i1);
+	var updateitem = await con.Item.Where(test => test.ItemCode == id).FirstOrDefaultAsync();
+	if (updateitem != null)
+		i1.ItemCode = updateitem.ItemCode;
+	updateitem = imap.Map<Item>(i1);
 	con.Item.Update(updateitem);
 	await con.SaveChangesAsync();
 	return Results.Ok(updateitem);
 });
-app.MapPut("/Stock", async (DataContext con, StockDTO s1, IMapper imap) =>
+app.MapPut("/Stock/{id:int}", async (DataContext con, StockDTO s1, IMapper imap, int id) =>
 {
 	var itemid = await con.Item.Where(test => test.ItemName == s1.ItemName).FirstOrDefaultAsync();
 	if (itemid != null)
@@ -661,20 +826,26 @@ app.MapPut("/Stock", async (DataContext con, StockDTO s1, IMapper imap) =>
 	else
 		return Results.NotFound("Item Is Unavailable");
 
-	var updatestock = imap.Map<Stock>(s1);
+	var updatestock = await con.Stock.Where(test => test.StockID == id).FirstOrDefaultAsync();
+	if (updatestock != null)
+		s1.StockID = updatestock.StockID;
+	updatestock = imap.Map<Stock>(s1);
 	con.Stock.Update(updatestock);
 	await con.SaveChangesAsync();
 	return Results.Ok(updatestock);
 });
-app.MapPut("/Unit", async (DataContext con, UnitDTO u1, IMapper imap) =>
+app.MapPut("/Unit/{id:int}", async (DataContext con, UnitDTO u1, IMapper imap, int id) =>
 {
-	var updateunit = imap.Map<Unit>(u1);
+	var updateunit = await con.Unit.Where(test => test.ID == id).FirstOrDefaultAsync();
+	if (updateunit != null)
+		u1.ID = updateunit.ID;
+	updateunit = imap.Map<Unit>(u1);
 	con.Unit.Update(updateunit);
 	await con.SaveChangesAsync();
 	return Results.Ok(updateunit);
 });
 
-app.MapPut("/Purchase", async (DataContext con, PurchaseDTO p1, IMapper imap) =>
+app.MapPut("/Purchase/{id:int}", async (DataContext con, PurchaseDTO p1, IMapper imap, int id) =>
 {
 	var itemid = await con.Item.Where(test => test.ItemName == p1.ItemName).FirstOrDefaultAsync();
 	if (itemid != null)
@@ -687,11 +858,14 @@ app.MapPut("/Purchase", async (DataContext con, PurchaseDTO p1, IMapper imap) =>
 		p1.SupplyId = supplyid.SupplyID;
 	else
 		return Results.NotFound("Supplier Is Unavailable");
+	var updatepurchase = await con.Purchase.Where(test => test.PurchaseNo == id).FirstOrDefaultAsync();
+	if (updatepurchase != null)
+		p1.PurchaseNo = updatepurchase.PurchaseNo;
 
 	var oldpurquant = await con.Purchase.Where(test => test.PurchaseNo == p1.PurchaseNo).FirstOrDefaultAsync();
 	if (oldpurquant != null)
 	{
-		if (oldpurquant.Quantity != p1.Quantity || oldpurquant.ItemId != p1.ItemId)
+		if (oldpurquant.Quantity != p1.Quantity && oldpurquant.ItemId == p1.ItemId)
 		{
 			var checkstock = await con.Stock.Where(test => test.ItemId == p1.ItemId).FirstOrDefaultAsync();
 
@@ -722,6 +896,36 @@ app.MapPut("/Purchase", async (DataContext con, PurchaseDTO p1, IMapper imap) =>
 				con.Stock.Add(newstock);
 			}
 		}
+		if (oldpurquant.ItemId != p1.ItemId)
+		{
+			var Removestock = await con.Stock.Where(test => test.ItemId == oldpurquant.ItemId).FirstOrDefaultAsync();
+			if (Removestock != null)
+			{
+				Removestock.Qunatity = Removestock.Qunatity - oldpurquant.Quantity;
+				if (Removestock.Qunatity <= 0)
+				{
+					con.Stock.Remove(Removestock);
+				}
+				else
+				{
+					con.Stock.Update(Removestock);
+				}
+
+			}
+			var updatestock = await con.Stock.Where(test => test.ItemId == p1.ItemId).FirstOrDefaultAsync();
+			if (updatestock != null)
+			{
+				updatestock.Qunatity = updatestock.Qunatity + p1.Quantity;
+				con.Stock.Update(updatestock);
+			}
+			else
+			{
+				var newstock = new Stock();
+				newstock.ItemId = p1.ItemId;
+				newstock.Qunatity = p1.Quantity;
+				con.Stock.Add(newstock);
+			}
+		}
 	}
 	p1.PurchasedValue = p1.Quantity * p1.Price;
 	oldpurquant = imap.Map<Purchase>(p1);
@@ -729,23 +933,29 @@ app.MapPut("/Purchase", async (DataContext con, PurchaseDTO p1, IMapper imap) =>
 	await con.SaveChangesAsync();
 	return Results.Ok(oldpurquant);
 });
-app.MapPut("/Supply", async (DataContext con, SupplyDTO s1, IMapper imap) =>
+app.MapPut("/Supply/{id:int}", async (DataContext con, SupplyDTO s1, IMapper imap, int id) =>
 {
-	var updateSupply = imap.Map<Supply>(s1);
+	var updateSupply = await con.Supply.Where(test => test.SupplyID == id).FirstOrDefaultAsync();
+	if (updateSupply != null)
+		s1.SupplyID = updateSupply.SupplyID;
+	updateSupply = imap.Map<Supply>(s1);
 	con.Supply.Update(updateSupply);
 	await con.SaveChangesAsync();
 	return Results.Ok(updateSupply);
 });
 
-app.MapPut("/FoodMenu", async (DataContext con, FoodMenuDTO f1, IMapper imap) =>
+app.MapPut("/FoodMenu/{id:int}", async (DataContext con, FoodMenuDTO f1, IMapper imap, int id) =>
 {
-	var updatefood = imap.Map<FoodMenu>(f1);
+	var updatefood = await con.FoodMenu.Where(test => test.FoodID == id).FirstOrDefaultAsync();
+	if (updatefood != null)
+		f1.FoodID = updatefood.FoodID;
+	updatefood = imap.Map<FoodMenu>(f1);
 	con.FoodMenu.Update(updatefood);
 	await con.SaveChangesAsync();
 	return Results.Ok(updatefood);
 });
 
-app.MapPut("/FoodMapping", async (DataContext con, FoodMapppingDTO f1, IMapper imap) =>
+app.MapPut("/FoodMapping/{id:int}", async (DataContext con, FoodMapppingDTO f1, IMapper imap, int id) =>
 {
 	var itemid = await con.Item.Where(test => test.ItemName == f1.ItemName).FirstOrDefaultAsync();
 	if (itemid != null)
@@ -759,19 +969,25 @@ app.MapPut("/FoodMapping", async (DataContext con, FoodMapppingDTO f1, IMapper i
 	else
 		return Results.NotFound("Food Is Unavailable");
 
-	var updatemapping = imap.Map<FoodMapping>(f1);
+	var updatemapping = await con.FoodMapping.Where(test => test.MappingID == id).FirstOrDefaultAsync();
+	if (updatemapping != null)
+		f1.MappingID = updatemapping.MappingID;
+	updatemapping = imap.Map<FoodMapping>(f1);
 	con.FoodMapping.Update(updatemapping);
 	await con.SaveChangesAsync();
 	return Results.Ok(updatemapping);
 });
 
-app.MapPut("/KitchenFood", async (DataContext con, KitchenFoodDTO k1, IMapper imap) =>
+app.MapPut("/KitchenFood/{id:int}", async (DataContext con, KitchenFoodDTO k1, IMapper imap, int id) =>
 {
 	var foodid = await con.FoodMenu.Where(test => test.FoodName == k1.FoodName).FirstOrDefaultAsync();
 	if (foodid != null)
 		k1.FoodID = foodid.FoodID;
 	else
 		return Results.NotFound("Food Is Unavailable");
+	var updatekitchenfood = await con.KitchenFood.Where(test => test.KitchenFoodID == id).FirstOrDefaultAsync();
+	if (updatekitchenfood != null)
+		k1.KitchenFoodID = updatekitchenfood.KitchenFoodID;
 
 	var oldkitchenfood = await con.KitchenFood.Where(test => test.KitchenFoodID == k1.KitchenFoodID).FirstOrDefaultAsync();
 	if (oldkitchenfood != null)
@@ -813,13 +1029,13 @@ app.MapPut("/KitchenFood", async (DataContext con, KitchenFoodDTO k1, IMapper im
 			}
 		}
 	}
-	var updatekitchenfood = imap.Map<KitchenFood>(k1);
+	updatekitchenfood = imap.Map<KitchenFood>(k1);
 	con.KitchenFood.Update(updatekitchenfood);
 	await con.SaveChangesAsync();
 	return Results.Ok(updatekitchenfood);
 });
 
-app.MapPut("/Sales", async (DataContext con, SalesDTO s1, IMapper imap) =>
+app.MapPut("/Sales/{id:int}", async (DataContext con, SalesDTO s1, IMapper imap, int id) =>
 {
 	var foodid = await con.FoodMenu.Where(test => test.FoodName == s1.KitchenFoodName).FirstOrDefaultAsync();
 	if (foodid != null)
@@ -833,10 +1049,14 @@ app.MapPut("/Sales", async (DataContext con, SalesDTO s1, IMapper imap) =>
 	else
 		return Results.NotFound("Food Is Unavailable");
 
+	var updatesales = await con.Sales.Where(test => test.SalesID == id).FirstOrDefaultAsync();
+	if (updatesales != null)
+		s1.SalesID = updatesales.SalesID;
+
 	var oldsaleitem = await con.Sales.Where(test => test.SalesID == s1.SalesID).FirstOrDefaultAsync();
 	if (oldsaleitem != null)
 	{
-		if (oldsaleitem.Quantity != s1.Quantity)
+		if (oldsaleitem.Quantity != s1.Quantity && oldsaleitem.KitchenFoodID == s1.KitchenFoodID)
 		{
 			var kitchenfooditem = await con.KitchenFood.Where(test => test.KitchenFoodID == oldsaleitem.KitchenFoodID).FirstOrDefaultAsync();
 			if (kitchenfooditem != null)
@@ -859,13 +1079,77 @@ app.MapPut("/Sales", async (DataContext con, SalesDTO s1, IMapper imap) =>
 				{
 					if (s1.Price != null && s1.Quantity != null && fooditemprice.Price != null)
 					{
+						double totalpaid = 0;
 						s1.Price = s1.Quantity * fooditemprice.Price;
+						if (s1.Cash != null && s1.UPI != null && s1.Credit != null)
+						{
+							totalpaid = (double)(s1.Cash + s1.Credit + s1.UPI);
+							if (s1.Price < totalpaid)
+							{
+								return Results.NotFound("Over Paid");
+							}
+							else if (s1.Price > totalpaid)
+							{
+								return Results.NotFound("Under Paid");
+							}
+						}
 					}
 				}
 			}
 		}
+		if (oldsaleitem.KitchenFoodID != s1.KitchenFoodID)
+		{
+			var RemoveKitchenItem = await con.KitchenFood.Where(test => test.KitchenFoodID == oldsaleitem.KitchenFoodID).FirstOrDefaultAsync();
+			if (RemoveKitchenItem != null)
+			{
+				RemoveKitchenItem.QuantityPrepared = RemoveKitchenItem.QuantityPrepared + oldsaleitem.Quantity;
+				con.KitchenFood.Update(RemoveKitchenItem);
+			}
+			var UpdateKitchenItem = await con.KitchenFood.Where(test => test.KitchenFoodID == s1.KitchenFoodID).FirstOrDefaultAsync();
+			if (UpdateKitchenItem != null)
+			{
+				if (UpdateKitchenItem.QuantityPrepared < s1.Quantity)
+				{
+					return Results.NotFound("Kitchen Stock Low, Order Less");
+				}
+				else if (UpdateKitchenItem.QuantityPrepared == s1.Quantity)
+				{
+					con.KitchenFood.Remove(UpdateKitchenItem);
+				}
+				else
+				{
+					UpdateKitchenItem.QuantityPrepared = UpdateKitchenItem.QuantityPrepared - s1.Quantity;
+					con.KitchenFood.Update(UpdateKitchenItem);
+				}
+				var fooditemprice = await con.FoodMenu.Where(test => test.FoodID == UpdateKitchenItem.FoodID).FirstOrDefaultAsync();
+				if (fooditemprice != null)
+				{
+					if (s1.Price != null && s1.Quantity != null && fooditemprice.Price != null)
+					{
+						double totalpaid = 0;
+						s1.Price = s1.Quantity * fooditemprice.Price;
+						if (s1.Cash != null && s1.UPI != null && s1.Credit != null)
+						{
+							totalpaid = (double)(s1.Cash + s1.Credit + s1.UPI);
+							if (s1.Price < totalpaid)
+							{
+								return Results.NotFound("Over Paid");
+							}
+							else if (s1.Price > totalpaid)
+							{
+								return Results.NotFound("Under Paid");
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				return Results.NotFound("Kitchen Food Not Available");
+			}
+		}
 	}
-	var updatesales = imap.Map<Sales>(s1);
+	updatesales = imap.Map<Sales>(s1);
 	con.Sales.Update(updatesales);
 	await con.SaveChangesAsync();
 	return Results.Ok(updatesales);
@@ -1355,7 +1639,7 @@ public class ItemDTO
 	public string? Image { get; set; }
 	public double ReorderLevel { get; set; }
 	public string? UnitName { get; set; }
-	//[JsonIgnore]
+	[JsonIgnore]
 	public int? UnitId { get; set; }
 	public bool IsActive { get; set; } = true;
 }
@@ -1365,7 +1649,7 @@ public class UnitDTO
 	[StringLength(50, MinimumLength = 3)]
 	public string UnitName { get; set; } = null!;
 	public bool IsActive { get; set; } = true;
-	//[JsonIgnore]
+	[JsonIgnore]
 	public virtual ICollection<Item>? Item { get; set; }
 }
 
@@ -1373,7 +1657,7 @@ public class StockDTO
 {
 	public int StockID { get; set; }
 	public string? ItemName { get; set; }
-	//[JsonIgnore]
+	[JsonIgnore]
 	public int? ItemId { get; set; }
 	public double? Qunatity { get; set; }
 }
@@ -1391,14 +1675,14 @@ public class PurchaseDTO
 	public int PurchaseNo { get; set; }
 	public DateTime PurchasedDate { get; set; }
 	public string? ItemName { get; set; }
-	//[JsonIgnore]
+	[JsonIgnore]
 	public int? ItemId { get; set; }
 	public double? Price { get; set; }
 	public double? Quantity { get; set; }
 	public string? suppliermame { get; set; }
-	//[JsonIgnore]
+	[JsonIgnore]
 	public int? SupplyId { get; set; }
-	//[JsonIgnore]
+	[JsonIgnore]
 	public double? PurchasedValue { get; set; }
 }
 
@@ -1409,7 +1693,7 @@ public class FoodMenuDTO
 	public string FoodName { get; set; } = null!;
 	public double? Price { get; set; }
 	public bool IsActive { get; set; } = true;
-	//[JsonIgnore]
+	[JsonIgnore]
 	public virtual ICollection<FoodMapping>? FoodMapping { get; set; }
 }
 
@@ -1417,11 +1701,11 @@ public class FoodMapppingDTO
 {
 	public int MappingID { get; set; }
 	public string? FoodName { get; set; }
-	//[JsonIgnore]
+	[JsonIgnore]
 	public int? FoodID { get; set; }
 	public double? FoodQuantity { get; set; }
 	public string? ItemName { get; set; }
-	//[JsonIgnore]
+	[JsonIgnore]
 	public int? ItemId { get; set; }
 	public double? ItemQuantity { get; set; }
 	public bool Active { get; set; }
@@ -1431,11 +1715,11 @@ public class KitchenFoodDTO
 {
 	public int KitchenFoodID { get; set; }
 	public string? FoodName { get; set; }
-	//[JsonIgnore]
+	[JsonIgnore]
 	public int? FoodID { get; set; }
 	public double? QuantityPrepared { get; set; }
 	public DateTime PreparedDate { get; set; }
-	//[JsonIgnore]
+	[JsonIgnore]
 	public virtual ICollection<Sales>? Sales { get; set; }
 }
 public class SalesDTO
@@ -1445,10 +1729,10 @@ public class SalesDTO
 	public string CustomerName { get; set; } = null!;
 	public string? CustomerType { get; set; }
 	public string? KitchenFoodName { get; set; }
-	//[JsonIgnore]
+	[JsonIgnore]
 	public int? KitchenFoodID { get; set; }
 	public double? Quantity { get; set; }
-	//[JsonIgnore]
+	[JsonIgnore]
 	public double? Price { get; set; } = 0;
 	public double? Cash { get; set; } = 0;
 	// [StringLength(4)]
