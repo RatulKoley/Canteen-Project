@@ -31,12 +31,13 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
 	app.UseDeveloperExceptionPage();
+	app.UseSwagger();
+	app.UseSwaggerUI();
+	app.UseHttpsRedirection();
+	app.UseCors("AllowOrigin");
+	app.UseRouting();
 }
-app.UseSwagger();
-app.UseSwaggerUI();
-app.UseHttpsRedirection();
-app.UseCors("AllowOrigin");
-app.UseRouting();
+
 
 
 app.MapGet("/Unit", async (DataContext con) =>
